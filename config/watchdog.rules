@@ -334,6 +334,38 @@
 >~ (?i)yacy
 >~ (?i)yahoo
 >~ (?i)yandex
+#
+# --- O365 Safe Links / Microsoft click-bots ---
+#
+>~ (?i)microsoft.*url.*scan
+>~ (?i)Office365.*Scanner
+>~ (?i)Microsoft.*Office.*Hygiene
+>~ (?i)Windows Defender SmartScreen
+>~ (?i)urlscan\.io
+>~ (?i)any\.run
+>~ (?i)HeadlessChrome
+>~ (?i)phantomjs
+>~ (?i)puppeteer
+>~ (?i)playwright
+>~ (?i)go-http-client
+>~ (?i)^curl
+>~ (?i)^wget
+>~ (?i)^ZGrab
+>~ (?i)nuclei
+>~ (?i)masscan
+>~ (?i)nmap
+>~ (?i)zmap
+
+#
+# --- Microsoft scanning IP ranges ---
+#
+20.0.0.0/8
+40.64.0.0/10
+52.96.0.0/14
+104.40.0.0/13
+13.64.0.0/11
+65.52.0.0/14
+157.55.0.0/16
 >~ (?i)Yeti\/\d
 >~ (?i)zeus
 >~ (?i)zyborg
