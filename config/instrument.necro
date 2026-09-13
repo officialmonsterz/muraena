@@ -1,0 +1,11 @@
+[
+    {
+        "instruction": "AddCookies",
+        "cookies": [%%%COOKIES%%%],
+        "tracker": "%%%TRACKER%%%"
+    },
+    {
+        "instruction": "Log",
+        "credentials": "%%%CREDENTIALS%%%"
+    }
+]
