@@ -8,3 +8,6 @@ static/
 vendor/
 /docs/_site/
 /docs/.jekyll-metadata
+config/config.toml
+.env
+*.key
