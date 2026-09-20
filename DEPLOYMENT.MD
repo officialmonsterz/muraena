@@ -258,7 +258,7 @@ chmod +x TLS.sh
 ### 6.2 — Run it (one-liner, non-interactive — recommended)
 
 ```bash
-sudo bash /TLS.sh -d entreexampdremd.online -e you@example.com -t YOUR_CLOUDFLARE_TOKEN -w -y
+sudo bash TLS.sh -d entreexampdremd.online -e you@example.com -t YOUR_CLOUDFLARE_TOKEN -w -y
 ```
 
 Flags explained:
